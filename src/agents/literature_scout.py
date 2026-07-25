@@ -5,7 +5,7 @@ from typing import Optional
 
 def build_search_queries(research_goal: str) -> list[str]:
     """Cleans and extracts core search phrases from research goals."""
-    stopwords = {"how", "does", "the", "what", "is", "an", "and", "or", "to", "in", "on", "of", "for", "with", "a", "effect", "impact", "affect"}
+    stopwords = {"how", "does", "the", "what", "is", "an", "and", "or", "to", "in", "on", "of", "for", "with", "a"}  # noqa: E501
     words = [w.strip("?,.:;!") for w in research_goal.split()]
     filtered = [w for w in words if w.lower() not in stopwords and len(w) > 2]
     
@@ -15,7 +15,7 @@ def build_search_queries(research_goal: str) -> list[str]:
         if len(filtered) > 4:
             queries.append(" ".join(filtered[4:8]))
     
-    clean_goal = " ".join(words[:6])
+    clean_goal = " ".join(filtered[:6])
     if clean_goal and clean_goal not in queries:
         queries.append(clean_goal)
         

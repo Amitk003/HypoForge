@@ -47,14 +47,19 @@ def build_correlation_dag(df: pd.DataFrame, threshold: float = 0.3) -> CausalGra
                 p_corr = calculate_partial_correlation(num_df, n1, n2, other_nodes[:3])
                 
                 if abs(p_corr) >= threshold * 0.5:
-                    # Orient edge based on directional covariance asymmetry (skewness or lead-lag signal proxy)
-                    s1 = num_df[n1].skew() if hasattr(num_df[n1], 'skew') else 0
-                    s2 = num_df[n2].skew() if hasattr(num_df[n2], 'skew') else 0
+                    # Orient edge using variance ratio heuristic.
+                    # In additive noise models, the cause tends to have lower variance
+                    # than the effect. This is a simple proxy for directionality.
+                    var1 = num_df[n1].var()
+                    var2 = num_df[n2].var()
+                    ratio = var1 / var2 if var2 > 0 else 1.0
                     
-                    if abs(s1) > abs(s2):
+                    if ratio < 0.8:
                         src, tgt = n1, n2
-                    else:
+                    elif ratio > 1.2:
                         src, tgt = n2, n1
+                    else:
+                        src, tgt = n1, n2
 
                     edges.append(CausalEdge(
                         source=src,
