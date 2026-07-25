@@ -239,10 +239,10 @@ def build_correlation_dag(df: pd.DataFrame, threshold: float = 0.3) -> CausalGra
     )
 
 
-def build_graph_from_data(df: pd.DataFrame, method: str = "pc") -> CausalGraphData:
+def build_graph_from_data(df: pd.DataFrame, method: str = "pc", alpha: float = 0.05) -> CausalGraphData:
     if method == "correlation":
         return build_correlation_dag(df)
-    return build_pc_dag(df)
+    return build_pc_dag(df, alpha=alpha)
 
 
 def get_graphviz_dag(cg: CausalGraphData):
