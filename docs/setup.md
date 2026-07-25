@@ -2,36 +2,50 @@
 
 ## Requirements
 
--   Python 3.10 or higher
--   pip (Python package manager)
+- Python 3.10 or higher
+- pip (Python package manager)
 
-## Installation Steps
+## Installation
 
-1.  Clone or download the repository:
-    ```
-    git clone <repo-url>
-    cd hypoforge
-    ```
+1. Open a terminal in the project folder.
 
-2.  Install dependencies:
-    ```
-    pip install -r requirements.txt
-    ```
+2. Install all required packages:
 
-3.  Run the app:
-    ```
-    streamlit run src/ui/app.py
-    ```
+```bash
+pip install -r requirements.txt
+```
 
-## Configuration
+3. (Optional) If you want better paper search, install sentence-transformers. It downloads a small AI model for finding similar papers:
 
-You can set these environment variables in a `.env` file:
+```bash
+pip install sentence-transformers
+```
 
--   `OPENAI_API_KEY` - Optional. Used if you want to use GPT models for ranking.
--   `TAVILY_API_KEY` - Optional. Used for web search in the Literature Scout.
+## Run the API Server (For New Frontend)
 
-If you don't set these, the system uses local models and free APIs by default.
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
+
+The API is now available at `http://localhost:8000`. Open `http://localhost:8000/docs` to see the interactive API documentation.
+
+## Run the Streamlit Dashboard (Old UI)
+
+```bash
+streamlit run src/ui/app.py
+```
+
+The dashboard opens in your browser at `http://localhost:8501`.
+
+## Environment Variables (Optional)
+
+Create a `.env` file in the project root to set these:
+
+- `OPENAI_API_KEY` - Only needed if you want to use GPT models. Not required for the default setup.
+- `TAVILY_API_KEY` - Only needed for web search in the Literature Scout. Not required.
+
+If you do not set these, the system uses free local models and the arXiv API.
 
 ## Data
 
-Place your CSV or Parquet files in the `data/` folder. The app has a file uploader in the UI, so you can also upload files directly.
+Place your CSV or Parquet files in the `data/` folder. The API accepts file uploads, so you can also send data directly through the API endpoints.

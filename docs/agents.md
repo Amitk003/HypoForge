@@ -1,38 +1,57 @@
 # Agent Guide
 
+HypoForge has 8 AI agents. Each agent has one job. They run in sequence and pass results to the next agent.
+
 ## Literature Scout
 
-Turns the research goal into search queries. Fetches papers from arXiv and other open sources. Builds a search index so other agents can look up relevant findings.
+Turns your research question into search queries. Fetches papers from arXiv (free research paper database). Stores paper summaries so other agents can use them.
 
 ## Data Analyst
 
-Loads your dataset. Builds summary statistics and finds correlations. Runs causal discovery to figure out how variables influence each other. Produces a directed graph of causal relationships.
+Loads your CSV or Parquet data. Builds a summary (row count, column types, missing values, correlations). Runs causal discovery to find how variables affect each other. Produces a cause-effect graph.
 
 ## Hypothesis Generator
 
-Creates 5-10 hypothesis candidates. It looks at unusual patterns in the data, paths in the causal graph, and gaps in the literature. Each hypothesis includes a core claim and a proposed mechanism.
+Creates hypotheses using three sources:
+- Patterns it finds in your data
+- Paths in the causal graph
+- Gaps in the research papers found by the Literature Scout
+
+Each hypothesis includes a main claim and a proposed mechanism (how the cause leads to the effect).
 
 ## Critic
 
-Stress-tests every hypothesis. Checks three things:
--   Is it plausible based on existing research?
--   Does it confuse correlation with causation?
--   Is it practically testable and ethical?
+Checks every hypothesis for problems:
+- Is it backed by evidence?
+- Does it mix up correlation with causation?
+- Can it actually be tested?
+- Are there any ethical concerns?
 
-Returns scores and written critiques for each candidate.
+Returns a list of issues found for each hypothesis.
 
 ## Evolver
 
-Ranks hypotheses using a weighted score: novelty, causal strength, testability, and potential impact. Applies genetic operations - combines good parts of two hypotheses, or mutates a weak part into something stronger.
+Scores hypotheses on 4 things:
+- Novelty: how new or surprising
+- Causal rigor: how strong is the cause-effect evidence
+- Testability: how easy to test
+- Impact: how important if proven true
+
+Can also combine two good hypotheses (crossover) or adjust weak parts (mutation) to create stronger candidates.
 
 ## Simulator
 
-Trains a quick ML model (XGBoost) on the available data. For each top hypothesis, it simulates what happens when you change the key variable. Reports the predicted effect with confidence intervals.
+Trains a RandomForest model on your data. For each top hypothesis, it simulates: "What happens if we change variable X to value Y?" Reports the predicted effect with a 95% confidence interval.
 
 ## Experiment Designer
 
-Turns a hypothesis into a concrete experiment. Specifies what variables to measure, what to control for, what statistical test to use, and how many samples you need. Outputs a step-by-step protocol.
+Turns a hypothesis into a formal experiment plan:
+- What to measure (independent and dependent variables)
+- What to control for (confounders)
+- What statistical test to use
+- How many samples needed
+- Step-by-step procedure
 
 ## Meta-Reviewer
 
-Compiles everything into a final document. Includes all citations, the causal graph, simulation plots, the protocol, and safety warnings. Produces a summary suitable for sharing with collaborators.
+Takes everything from all previous agents and writes a final report. Includes citations, causal graph summary, simulation results, experiment protocols, and safety warnings.
