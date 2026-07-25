@@ -26,3 +26,7 @@ env/
 chroma_db/
 faiss_index/
 hypoforge_*.md
+
+streamlit.log
+.pytest_cache/
+design/
