@@ -78,11 +78,7 @@ class HypothesisState(BaseModel):
     debate_log: list[DebateMessage] = Field(default_factory=list)
     meta_review_report: str = ""
     pipeline_stage: str = "initialized"
-    pipeline_stage_timings: dict = Field(default_factory=dict, description="Stage name -> duration in seconds")
     errors: list[str] = Field(default_factory=list)
-    error_stage_keys: list[str] = Field(default_factory=list, description="Stage keys that produced errors")
-    alpha: float = Field(default=0.05, description="Significance level for causal discovery")
-    max_hypotheses: int = Field(default=10, description="Maximum number of hypotheses to generate")
 
     @property
     def top_hypotheses(self) -> list[Hypothesis]:
