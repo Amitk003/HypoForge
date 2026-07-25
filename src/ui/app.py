@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import os
+import tempfile
 from pathlib import Path
 
 from src.orchestrator import run_pipeline
@@ -166,23 +168,79 @@ with tab_hypotheses:
                         st.markdown(f"**Simulation Outcome**: Intervention on **{sim.intervention_variable}** $\\rightarrow$ Predicted **{sim.target_variable}** change: **{sim.delta:+.4f}**")
 
 
+def render_pyvis_graph(cg: CausalGraphData) -> str:
+    try:
+        from pyvis.network import Network
+        net = Network(height="400px", width="100%", bgcolor="#0E1117", font_color="#E2E8F0")
+        net.toggle_physics(True)
+        for node in cg.nodes:
+            net.add_node(node, label=node, color="#1E293B", border="#38BDF8")
+        for edge in cg.edges:
+            label = str(edge.weight) if edge.weight else ""
+            color = "#38BDF8"
+            net.add_edge(edge.source, edge.target, title=label, color=color, arrows="to")
+        return net.generate_html()
+    except Exception:
+        return ""
+
+
 with tab_sim:
     if not st.session_state.pipeline_run:
         st.info("Run the pipeline first to see causal graph and simulations.")
     else:
         state = st.session_state.state
 
-        if state.causal_graph and state.causal_graph.dot_source:
-            st.subheader("Discovered Causal Graph (DAG)")
-            try:
-                st.graphviz_chart(state.causal_graph.dot_source)
-            except Exception:
-                st.code(state.causal_graph.dot_source, language="dot")
+        if state.causal_graph and state.causal_graph.nodes:
+            st.subheader("Interactive Causal Graph (DAG)")
+            pyvis_html = render_pyvis_graph(state.causal_graph)
+            if pyvis_html:
+                st.components.v1.html(pyvis_html, height=420)
+            elif state.causal_graph.dot_source:
+                try:
+                    st.graphviz_chart(state.causal_graph.dot_source)
+                except Exception:
+                    st.code(state.causal_graph.dot_source, language="dot")
+
+            if state.causal_graph.confounders:
+                with st.expander("Identified Confounders"):
+                    st.write(", ".join(state.causal_graph.confounders))
+            if state.causal_graph.mediators:
+                with st.expander("Identified Mediators"):
+                    st.write(", ".join(state.causal_graph.mediators))
         else:
             st.info("No causal graph generated. Provide data to enable causal discovery.")
 
-        if state.simulations:
-            st.subheader("Counterfactual Simulations ($do(X=x)$)")
+
+        st.subheader("Counterfactual Simulator")
+        if state.saved_csv_path and Path(state.saved_csv_path).exists():
+            df = load_dataframe(state.saved_csv_path)
+            if df is not None:
+                num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+                target_col = st.selectbox("Target variable", num_cols if num_cols else ["None"], key="sim_target")
+                intervention_col = st.selectbox("Intervention variable", [c for c in num_cols if c != target_col] if num_cols else ["None"], key="sim_intervention")
+                if target_col != "None" and intervention_col != "None":
+                    col1, col2 = st.columns([3, 1])
+                    baseline = float(df[intervention_col].mean())
+                    with col1:
+                        perturbed = st.slider(
+                            f"Set value for {intervention_col}",
+                            min_value=float(df[intervention_col].min()),
+                            max_value=float(df[intervention_col].max()),
+                            value=baseline,
+                            step=round(float(df[intervention_col].std()) / 10, 2),
+                        )
+                    with col2:
+                        st.metric("Baseline", f"{baseline:.2f}")
+                    model = train_surrogate(df, target_col)
+                    if model:
+                        result = counterfactual_predict(model, df, intervention_col, perturbed)
+                        if result:
+                            c1, c2, c3 = st.columns(3)
+                            c1.metric("Predicted Outcome", f"{result.predicted_outcome:.4f}" if result.predicted_outcome else "N/A")
+                            c2.metric("Delta from Baseline", f"{result.delta:+.4f}" if result.delta else "N/A")
+                            if result.ci_lower is not None and result.ci_upper is not None:
+                                c3.metric("95% CI", f"[{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+        elif state.simulations:
             sim_data = []
             for s in state.simulations:
                 sim_data.append({
@@ -199,7 +257,7 @@ with tab_sim:
             if sim_data:
                 st.dataframe(pd.DataFrame(sim_data), use_container_width=True)
         else:
-            st.info("No simulations available. Upload a dataset with numeric variables.")
+            st.info("Upload a dataset with numeric variables to run counterfactual simulations.")
 
 
 with tab_report:
