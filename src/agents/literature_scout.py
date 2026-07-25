@@ -2,6 +2,8 @@ import requests
 import xml.etree.ElementTree as ET
 from typing import Optional
 
+from src.rag_index import index_papers as rag_index_papers, search_papers as rag_search_papers
+
 
 def build_search_queries(research_goal: str) -> list[str]:
     """Cleans and extracts core search phrases from research goals."""
@@ -85,5 +87,17 @@ def format_papers_for_context(papers: list[dict]) -> str:
         lines.append(f"\n{i}. {p['title']}")
         if p.get("summary"):
             lines.append(f"   {p['summary'][:300]}...")
+        if p.get("score") is not None:
+            lines.append(f"   (semantic relevance: {p['score']})")
     return "\n".join(lines)
+
+
+def search_with_rag(research_goal: str, max_papers: int = 10) -> list[dict]:
+    raw_papers = search_papers(research_goal, max_papers=max_papers)
+    if raw_papers:
+        rag_index_papers(raw_papers)
+    ranked = rag_search_papers(research_goal, top_k=max_papers)
+    if ranked:
+        return ranked
+    return raw_papers
 
