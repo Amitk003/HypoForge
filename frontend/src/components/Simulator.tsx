@@ -1,0 +1,91 @@
+import { useState, type ChangeEvent } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { runSimulation, type SimulationResult } from '@/lib/api';
+
+interface SimulatorProps {
+  runId: string;
+}
+
+export default function Simulator({ runId }: SimulatorProps) {
+  const [target, setTarget] = useState('');
+  const [intervention, setIntervention] = useState('');
+  const [value, setValue] = useState('');
+  const [result, setResult] = useState<SimulationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSimulate() {
+    if (!target || !intervention || !value) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await runSimulation(runId, target, intervention, Number(value));
+      setResult(res);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Counterfactual Simulator</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div>
+          <Label>Target variable</Label>
+          <Input
+            placeholder="e.g. temperature"
+            value={target}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setTarget(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Intervention variable</Label>
+          <Input
+            placeholder="e.g. green_space"
+            value={intervention}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setIntervention(e.target.value)}
+          />
+        </div>
+        <div>
+          <Label>Intervention value</Label>
+          <Input
+            type="number"
+            placeholder="e.g. 96"
+            value={value}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setValue(e.target.value)}
+          />
+        </div>
+        <Button onClick={handleSimulate} disabled={loading} className="w-full">
+          {loading ? 'Simulating...' : 'Run Simulation'}
+        </Button>
+        {error && <p className="text-sm text-accent-danger">{error}</p>}
+        {result && (
+          <div className="bg-bg-page border border-border-default rounded-md p-3 space-y-1 text-sm">
+            <p>
+              Baseline: <strong>{result.baseline_outcome.toFixed(4)}</strong>
+            </p>
+            <p>
+              Predicted: <strong>{result.predicted_outcome.toFixed(4)}</strong>
+            </p>
+            <p>
+              Delta:{' '}
+              <strong className={result.delta >= 0 ? 'text-accent-success' : 'text-accent-danger'}>
+                {result.delta >= 0 ? '+' : ''}{result.delta.toFixed(4)}
+              </strong>
+            </p>
+            <p>
+              95% CI: <code>[{result.ci_lower.toFixed(4)}, {result.ci_upper.toFixed(4)}]</code>
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
