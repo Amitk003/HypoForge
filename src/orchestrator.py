@@ -45,4 +45,3 @@ def run_pipeline(state: HypothesisState) -> HypothesisState:
 
     state.pipeline_stage = "complete"
     return state
-
