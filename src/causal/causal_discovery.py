@@ -9,9 +9,6 @@ try:
 except ImportError:
     nx = None
 
-_PC_DF = None
-
-
 def calculate_partial_correlation(df: pd.DataFrame, x: str, y: str, z_list: list[str]) -> float:
     if not z_list:
         return float(df[x].corr(df[y]))
@@ -96,8 +93,7 @@ def build_pc_skeleton(df: pd.DataFrame, alpha: float = 0.05) -> tuple[list[str],
     return nodes, skeleton, sep_sets
 
 
-def orient_edges(nodes: list[str], skeleton: set, sep_sets: dict) -> list[CausalEdge]:
-    global _PC_DF
+def orient_edges(nodes: list[str], skeleton: set, sep_sets: dict, df: pd.DataFrame) -> list[CausalEdge]:
     edges = []
     adjacency = {v: set() for v in nodes}
     for vi, vj in skeleton:
@@ -133,8 +129,7 @@ def orient_edges(nodes: list[str], skeleton: set, sep_sets: dict) -> list[Causal
                                 changed = True
 
     # Build edge list from oriented + remaining undirected
-    df_local = _PC_DF
-    if df_local is None:
+    if df is None:
         return edges
     for vi in nodes:
         for vj in adjacency[vi]:
@@ -144,15 +139,15 @@ def orient_edges(nodes: list[str], skeleton: set, sep_sets: dict) -> list[Causal
                 elif (vj, vi) in oriented:
                     src, tgt = vj, vi
                 else:
-                    var1 = df_local[vi].var()
-                    var2 = df_local[vj].var()
+                    var1 = df[vi].var()
+                    var2 = df[vj].var()
                     ratio = var1 / var2 if var2 > 0 else 1.0
                     if ratio < 0.8:
                         src, tgt = vi, vj
                     else:
                         src, tgt = vj, vi
                     oriented.add((src, tgt))
-                pcorr = calculate_partial_correlation(df_local, src, tgt, [])
+                pcorr = calculate_partial_correlation(df, src, tgt, [])
                 edges.append(CausalEdge(
                     source=src, target=tgt, edge_type="directed",
                     weight=round(float(pcorr), 3),
@@ -180,10 +175,8 @@ def identify_confounders_and_mediators(nodes: list[str], edges: list[CausalEdge]
 
 
 def build_pc_dag(df: pd.DataFrame, alpha: float = 0.05) -> CausalGraphData:
-    global _PC_DF
-    _PC_DF = df
     nodes, skeleton, sep_sets = build_pc_skeleton(df, alpha)
-    edges = orient_edges(nodes, skeleton, sep_sets)
+    edges = orient_edges(nodes, skeleton, sep_sets, df)
     confounders, mediators = identify_confounders_and_mediators(nodes, edges)
 
     dot_lines = ["digraph CausalDAG {", '  node [shape=ellipse, style=filled, fillcolor="#1E293B", fontcolor="#E2E8F0"];']
@@ -198,6 +191,7 @@ def build_pc_dag(df: pd.DataFrame, alpha: float = 0.05) -> CausalGraphData:
         nodes=nodes, edges=edges, confounders=confounders,
         mediators=mediators, dot_source="\n".join(dot_lines),
     )
+
 
 
 def build_correlation_dag(df: pd.DataFrame, threshold: float = 0.3) -> CausalGraphData:
