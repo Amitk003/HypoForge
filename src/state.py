@@ -21,6 +21,7 @@ class CausalEdge(BaseModel):
     source: str
     target: str
     edge_type: str = "directed"
+    weight: float = 1.0
 
 
 class CausalGraphData(BaseModel):
@@ -35,12 +36,12 @@ class SimulationResult(BaseModel):
     hypothesis_id: str = ""
     target_variable: str = ""
     intervention_variable: str = ""
-    intervention_value: float = 0.0
-    predicted_outcome: float = 0.0
-    baseline_outcome: float = 0.0
-    delta: float = 0.0
-    ci_lower: float = 0.0
-    ci_upper: float = 0.0
+    intervention_value: Optional[float] = None
+    predicted_outcome: Optional[float] = None
+    baseline_outcome: Optional[float] = None
+    delta: Optional[float] = None
+    ci_lower: Optional[float] = None
+    ci_upper: Optional[float] = None
     plot_path: str = ""
 
 
@@ -59,7 +60,7 @@ class ExperimentProtocol(BaseModel):
 
 class DebateMessage(BaseModel):
     agent_role: str
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
     claim: str = ""
     counter_argument: str = ""
     consensus_status: str = "pending"
@@ -72,9 +73,16 @@ class HypothesisState(BaseModel):
     literature_context: list[str] = Field(default_factory=list)
     causal_graph: Optional[CausalGraphData] = None
     hypotheses: list[Hypothesis] = Field(default_factory=list)
-    top_hypotheses: list[Hypothesis] = Field(default_factory=list)
     simulations: list[SimulationResult] = Field(default_factory=list)
     protocols: list[ExperimentProtocol] = Field(default_factory=list)
     debate_log: list[DebateMessage] = Field(default_factory=list)
     pipeline_stage: str = "initialized"
     errors: list[str] = Field(default_factory=list)
+
+    @property
+    def top_hypotheses(self) -> list[Hypothesis]:
+        """Dynamically sorted top hypotheses by overall average score."""
+        def score(h: Hypothesis) -> float:
+            return (h.novelty_score + h.testability_score + h.causal_rigor_score + h.impact_score) / 4.0
+        return sorted(self.hypotheses, key=score, reverse=True)[:5]
+

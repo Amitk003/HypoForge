@@ -54,17 +54,19 @@ def summarize_dataframe(df: pd.DataFrame) -> str:
         lines.append(df[num_cols].describe().to_string())
     lines.append("")
 
-    corr = df.select_dtypes(include=[np.number]).corr()
-    high_corr = []
-    for i in range(len(corr.columns)):
-        for j in range(i + 1, len(corr.columns)):
-            val = corr.iloc[i, j]
-            if abs(val) > 0.7:
-                high_corr.append(f"  {corr.columns[i]} <-> {corr.columns[j]}: {val:.3f}")
-    if high_corr:
-        lines.append("High correlations (|r| > 0.7):")
-        lines.extend(high_corr[:10])
-    else:
-        lines.append("No high correlations found.")
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        # Extract upper triangle correlations cleanly without Python for loops
+        upper_mask = np.triu(np.ones(corr.shape), k=1).astype(bool)
+        upper_corr = corr.where(upper_mask).stack()
+        high_corr = upper_corr[upper_corr.abs() > 0.7]
+
+        if not high_corr.empty:
+            lines.append("High correlations (|r| > 0.7):")
+            for (col1, col2), val in high_corr.head(10).items():
+                lines.append(f"  {col1} <-> {col2}: {val:.3f}")
+        else:
+            lines.append("No high correlations found.")
 
     return "\n".join(lines)
+
