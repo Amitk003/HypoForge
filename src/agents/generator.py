@@ -80,19 +80,30 @@ def extract_anomalies(summary: str) -> list[dict]:
     results = []
     if not summary:
         return results
-    lines = summary.lower().split("\n")
+    lines = summary.split("\n")
+    in_corr_section = False
     for line in lines:
-        if "high correlation" in line and ":" in line:
-            parts = line.split(":")
+        line_clean = line.strip()
+        if "high correlation" in line_clean.lower():
+            in_corr_section = True
+            continue
+        if in_corr_section and "<->" in line_clean:
+            parts = line_clean.split(":")
             if len(parts) >= 2:
-                rel = parts[0].strip()
-                val = parts[-1].strip()
+                pair = parts[0].strip()
+                val = parts[1].strip()
+                vars_split = pair.split("<->")
+                v1 = vars_split[0].strip() if len(vars_split) > 0 else "X"
+                v2 = vars_split[1].strip() if len(vars_split) > 1 else "Y"
                 results.append({
-                    "statement": f"Strong correlation between variables suggests a causal relationship worth investigating.",
-                    "evidence": f"Found high correlation: {rel} (r = {val})",
-                    "mechanism": "Correlated variables may share a common underlying cause or direct causal link.",
+                    "statement": f"Observed strong statistical coupling between {v1} and {v2} suggests an underlying interaction.",
+                    "evidence": f"Correlation detected: {v1} <-> {v2} (r = {val})",
+                    "mechanism": f"{v1} and {v2} may share a direct feedback mechanism or common unobserved driver.",
                 })
+        elif in_corr_section and not line_clean:
+            in_corr_section = False
     return results
+
 
 
 def extract_causal_paths(dag: Optional[CausalGraphData]) -> list[dict]:

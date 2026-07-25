@@ -40,11 +40,17 @@ def review_plausibility(h: Hypothesis) -> None:
 
 
 def review_causal_fallacy(h: Hypothesis, dag: Optional[object]) -> None:
-    if not dag or not dag.edges:
+    if not dag or not getattr(dag, "edges", None):
         return
     dag_nodes = set(dag.nodes)
-    words_in_statement = set(h.core_statement.lower().split())
-    mentioned_vars = [v for v in dag_nodes if v.lower() in words_in_statement]
+    statement_lower = h.core_statement.lower()
+    
+    # Match both exact feature names and normalized space-separated names (e.g. green_space -> green space)
+    mentioned_vars = [
+        v for v in dag_nodes 
+        if v.lower() in statement_lower or v.lower().replace("_", " ") in statement_lower
+    ]
+    
     if len(mentioned_vars) >= 2:
         edge_present = False
         for i in range(len(mentioned_vars)):
@@ -60,6 +66,7 @@ def review_causal_fallacy(h: Hypothesis, dag: Optional[object]) -> None:
                 "that show no direct edge in the discovered causal graph."
             )
             h.causal_rigor_score = max(0.0, h.causal_rigor_score - 0.2)
+
 
 
 def review_feasibility(h: Hypothesis) -> None:
