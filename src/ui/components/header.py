@@ -2,6 +2,7 @@ import streamlit as st
 
 
 def render_header(research_goal: str = ""):
+    goal_text = research_goal if research_goal else "Enter a research goal and optional dataset to generate testable scientific hypotheses."
     st.markdown("""
         <style>
         .hf-header {
@@ -24,6 +25,7 @@ def render_header(research_goal: str = ""):
             margin-top: 4px;
             white-space: nowrap; overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 600px;
         }
         </style>
         <div class="hf-header">
@@ -33,6 +35,6 @@ def render_header(research_goal: str = ""):
             </div>
             <div class="hf-header-goal">{goal}</div>
         </div>
-    """.format(goal=research_goal if research_goal else "Enter a research goal and optional dataset to generate, debate, simulate, and design testable scientific hypotheses."),
+    """.format(goal=goal_text),
         unsafe_allow_html=True,
     )
