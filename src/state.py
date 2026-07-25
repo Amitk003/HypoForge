@@ -76,6 +76,7 @@ class HypothesisState(BaseModel):
     simulations: list[SimulationResult] = Field(default_factory=list)
     protocols: list[ExperimentProtocol] = Field(default_factory=list)
     debate_log: list[DebateMessage] = Field(default_factory=list)
+    meta_review_report: str = ""
     pipeline_stage: str = "initialized"
     errors: list[str] = Field(default_factory=list)
 
@@ -85,4 +86,5 @@ class HypothesisState(BaseModel):
         def score(h: Hypothesis) -> float:
             return (h.novelty_score + h.testability_score + h.causal_rigor_score + h.impact_score) / 4.0
         return sorted(self.hypotheses, key=score, reverse=True)[:5]
+
 

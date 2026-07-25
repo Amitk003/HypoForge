@@ -4,6 +4,9 @@ from src.agents.literature_scout import search_papers, format_papers_for_context
 from src.agents.generator import generate_hypotheses
 from src.agents.critic import critique_hypotheses
 from src.agents.evolver import evolve_and_rank
+from src.agents.experiment_designer import design_experiments
+from src.agents.meta_reviewer import synthesize_review
+from src.simulation.surrogate_sim import run_simulations
 from src.data_engine import load_dataframe, summarize_dataframe
 from src.causal.causal_discovery import build_graph_from_data
 
@@ -42,6 +45,9 @@ def run_pipeline(state: HypothesisState) -> HypothesisState:
     state = generate_hypotheses(state)
     state = critique_hypotheses(state)
     state = evolve_and_rank(state)
+    state = run_simulations(state)
+    state = design_experiments(state)
+    state = synthesize_review(state)
 
     state.pipeline_stage = "complete"
     return state
