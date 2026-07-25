@@ -11,7 +11,7 @@ def test_pipeline_no_data():
     state = HypothesisState(research_goal="How does urban green space affect air temperature?")
     result = run_pipeline(state)
     assert len(result.literature_context) > 0
-    assert result.pipeline_stage == "literature_and_data_complete"
+    assert result.pipeline_stage == "complete"
     print("test_pipeline_no_data PASSED")
 
 
