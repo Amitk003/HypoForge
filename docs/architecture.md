@@ -47,20 +47,20 @@ uvicorn src.api.main:app --reload --port 8000
 
 The API exposes all pipeline features through HTTP endpoints. A frontend (React, curl, or any HTTP client) can call these endpoints.
 
-### 2. Streamlit Dashboard (Old)
+### 2. React Frontend
 
 ```bash
-streamlit run src/ui/app.py
+cd frontend && npm run dev
 ```
 
-The old Streamlit UI. It still works but has limitations. The new frontend will replace it.
+Vite + React + shadcn/ui frontend. Calls the REST API at `/api`. In development, Vite proxies `/api` to `localhost:8000`.
 
 ## Project Structure
 
 ```
 src/
   agents/            AI agents (one Python file per agent)
-  api/               FastAPI REST API
+  api/               FastAPI REST API (routes, main)
   causal/            Causal discovery algorithms (PC algorithm)
   simulation/        ML surrogate models and counterfactual engine
   ui/                Streamlit dashboard (old UI)

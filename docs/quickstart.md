@@ -44,15 +44,13 @@ Using the Swagger docs page (http://localhost:8000/docs):
 
 Then use the `run_id` to call `GET /api/runs/{run_id}/hypotheses` to see the results.
 
-## Step 5: Or Use the Streamlit Dashboard
-
-If you prefer the old Streamlit UI:
+## Step 5: Open the React Frontend
 
 ```bash
-streamlit run src/ui/app.py
+cd frontend && npm run dev
 ```
 
-Then upload `data/urban_climate_sample.csv`, enter a research goal, and click "Run Pipeline".
+Then open `http://localhost:5173` in your browser. Enter a research goal, upload data (optional), and click "Run Pipeline".
 
 ## What If Something Goes Wrong?
 

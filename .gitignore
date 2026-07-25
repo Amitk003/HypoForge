@@ -1,5 +1,4 @@
 main.log
-streamlit.log
 ROADMAP.md
 
 __pycache__/
@@ -30,3 +29,5 @@ hypoforge_*.md
 streamlit.log
 .pytest_cache/
 design/
+
+frontend/dist/

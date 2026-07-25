@@ -50,10 +50,10 @@ python examples/urban_climate.py
 
 **REST API** -- FastAPI backend with automatic Swagger docs. Call it from React, curl, Python, or any HTTP client. CORS enabled.
 
-**Streamlit Dashboard** -- The old UI still works if you prefer a visual interface:
+**React Frontend** -- Vite + React + shadcn/ui. Run in development:
 
 ```bash
-streamlit run src/ui/app.py
+cd frontend && npm run dev
 ```
 
 **Headless Mode** -- Run the pipeline from Python scripts and save reports to disk.

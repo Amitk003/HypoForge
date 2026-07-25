@@ -29,13 +29,13 @@ uvicorn src.api.main:app --reload --port 8000
 
 The API is now available at `http://localhost:8000`. Open `http://localhost:8000/docs` to see the interactive API documentation.
 
-## Run the Streamlit Dashboard (Old UI)
+## Run the React Frontend
 
 ```bash
-streamlit run src/ui/app.py
+cd frontend && npm run dev
 ```
 
-The dashboard opens in your browser at `http://localhost:8501`.
+Opens at `http://localhost:5173`. Vite proxies API calls to `http://localhost:8000`.
 
 ## Environment Variables (Optional)
 
