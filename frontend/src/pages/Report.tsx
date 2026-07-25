@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import Spinner from '@/components/Spinner';
+import EmptyState from '@/components/EmptyState';
 import { getReport, type ReportResponse } from '@/lib/api';
 
 interface ReportProps {
@@ -19,23 +21,15 @@ export default function ReportPage({ runId }: ReportProps) {
   }, [runId]);
 
   if (!runId) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Run the pipeline to generate a report.
-      </div>
-    );
+    return <EmptyState title="No report" description="Run the pipeline to generate a research report." />;
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-text-secondary">Loading...</div>;
+    return <Spinner text="Loading report..." />;
   }
 
   if (!report) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Run not found.
-      </div>
-    );
+    return <EmptyState title="Run not found" description="The pipeline run data is no longer available." />;
   }
 
   const r = report;

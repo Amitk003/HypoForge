@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { InlineSpinner } from '@/components/Spinner';
 import { runPipeline, type PipelineResponse } from '@/lib/api';
 
 interface SetupProps {
@@ -89,9 +90,13 @@ export default function Setup({ onPipelineComplete, onResearchGoalChange }: Setu
           </div>
         </details>
         <Button onClick={handleRun} disabled={loading || !goal.trim()} className="w-full">
-          {loading ? 'Running Pipeline...' : 'Run Pipeline'}
+          {loading ? <><InlineSpinner /> Running Pipeline...</> : 'Run Pipeline'}
         </Button>
-        {error && <p className="text-sm text-accent-danger">{error}</p>}
+        {error && (
+          <div className="bg-accent-danger/10 border border-accent-danger/30 rounded-md p-3 text-sm text-accent-danger">
+            {error}
+          </div>
+        )}
       </div>
 
       <div>
