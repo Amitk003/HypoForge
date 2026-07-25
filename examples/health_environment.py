@@ -40,3 +40,7 @@ if __name__ == "__main__":
     print(f"\nPipeline complete: {len(result.hypotheses)} hypotheses generated.")
     for h in result.top_hypotheses[:3]:
         print(f"  - {h.title} (score: {h.novelty_score:.2f})")
+
+    report_path = Path(__file__).parent.parent / "hypoforge_report_health.md"
+    report_path.write_text(result.meta_review_report)
+    print(f"\nMeta-review report saved to: {report_path}")

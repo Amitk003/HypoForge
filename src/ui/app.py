@@ -215,8 +215,9 @@ with tab_sim:
 
 
         st.subheader("Counterfactual Simulator")
-        if state.saved_csv_path and Path(state.saved_csv_path).exists():
-            df = load_dataframe(state.saved_csv_path)
+        csv_path = st.session_state.get("saved_csv_path", None)
+        if csv_path and Path(csv_path).exists():
+            df = load_dataframe(csv_path)
             if df is not None:
                 num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
                 target_col = st.selectbox("Target variable", num_cols if num_cols else ["None"], key="sim_target")
