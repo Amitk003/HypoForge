@@ -1,60 +1,64 @@
-# FAQ
+# Frequently Asked Questions
 
-## What is HypoForge?
+## General
 
-HypoForge is an open-source multi-agent AI system that helps researchers generate, test, and rank new scientific hypotheses. It searches literature, analyzes data, discovers causal relationships, runs simulations, and designs experiments.
+**What is HypoForge?**
+An open-source AI system that takes a research question and optional data, then generates ranked scientific hypotheses with experiment designs.
 
-## Do I need to know how to code?
+**Do I need to know programming?**
+You need to know basic terminal commands to install and run it. The API can be used from any programming language or tool.
 
-Basic command line skills help (installing packages, running scripts). The dashboard is a graphical interface -- no coding needed to use it. If you want to modify agents or add features, you will need Python.
+**Do I need a GPU?**
+No. Everything runs on CPU.
 
-## Do I need a GPU?
+**Do I need an internet connection?**
+Yes, for arXiv paper lookups. The pipeline works without internet if you only use your own data.
 
-No. Everything runs on CPU. The sentence-transformers model used for semantic search works fine on CPU (about 80MB download).
+## Data
 
-## Do I need an internet connection?
+**What kind of data works best?**
+CSV files with 50+ rows and 5+ numeric columns. Column names should describe what they measure (like "temperature", "green_space_pct").
 
-For arXiv paper lookups, yes. For everything else (data analysis, causal discovery, simulation, dashboard), no.
+**Can I use data without column names?**
+Not really. The system uses column names to match variables in hypotheses. Clear names give better results.
 
-## What kind of data should I upload?
+**What if I have no data?**
+The system still runs. It searches literature and generates hypotheses from your research goal alone.
 
-CSV or Parquet files with numeric columns. At least 50 rows and 5 columns for best results. Column names should describe the variable (e.g., "temperature", "green_space", "pm25"), not generic names like "col1", "col2".
+## Technical
 
-## What happens if I have no data?
+**How does the causal discovery work?**
+It uses the PC algorithm. This checks if pairs of variables are statistically independent. Then it finds the direction of cause-effect using orientation rules.
 
-The system still works. It searches literature and generates hypotheses based on the research goal alone. But you will not get causal graphs, simulations, or detailed experiment protocols.
+**How are hypotheses scored?**
+Four scores from 0 to 1: novelty (is it new?), causal rigor (strong cause-effect evidence?), testability (can we test it?), impact (does it matter?). The composite score is the average.
 
-## How is this different from ChatGPT or Gemini?
+**What ML model is used for simulation?**
+RandomForest from scikit-learn. It is fast and works well with small datasets.
 
-ChatGPT searches and summarizes. HypoForge goes further:
-- It discovers causal relationships (not just correlations)
-- It runs simulations to predict experiment outcomes
-- It generates formal experiment protocols with sample sizes
-- It uses multiple specialized agents that critique and improve each other's work
+**Can I use my own ML model?**
+Not currently. The simulation agent uses RandomForest internally.
 
-## What is the PC algorithm?
+## Errors
 
-The PC algorithm (Peter-Clark) is a constraint-based causal discovery method. It starts with all variables connected, then removes edges when statistical tests show two variables are independent given a set of other variables. It identifies v-structures (colliders) to determine causal direction.
+**The pipeline ran but I got 0 hypotheses.**
+This often means the research goal was too short or generic. Try a more specific question with more details.
 
-## Can I add my own agent?
+**The causal graph is empty.**
+The data needs at least 2 numeric columns with enough variation. Check that your CSV loaded correctly.
 
-Yes. Create a new file in `src/agents/`, define a function that takes and returns `HypothesisState`, and add it to the pipeline in `src/orchestrator.py`. See the contributing guide in `docs/contributing.md`.
+**The simulation says "Could not train model".**
+You need at least 10 complete rows (no missing values) with numeric columns.
 
-## How are hypotheses scored?
+## API
 
-Each hypothesis gets four scores (0-1):
+**How do I start the API server?**
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
 
-- **Novelty**: How new or unexpected the idea is
-- **Causal Rigor**: How well the causal mechanism is supported
-- **Testability**: How easy it is to test experimentally
-- **Impact**: Potential importance if confirmed
+**Where is the API documentation?**
+Open `http://localhost:8000/docs` in your browser after starting the server.
 
-The composite score is the average of all four, minus a penalty for critique notes.
-
-## What is the RAG vector index?
-
-When papers are fetched from arXiv, they are embedded into a Chroma vector database using sentence-transformers. This allows semantic search -- finding papers by meaning, not just keyword matching. The index persists across sessions in the `chroma_db/` folder.
-
-## Is this for real science or just demonstrations?
-
-It is designed for real hypothesis generation. The causal discovery and simulation components use established methods (PC algorithm, RandomForest counterfactuals, bootstrap confidence intervals). However, outputs should be reviewed by domain experts before planning actual experiments.
+**Can I use the API from JavaScript?**
+Yes. The API has CORS enabled. You can call it from any web frontend.

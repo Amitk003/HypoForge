@@ -1,55 +1,59 @@
 # Quick Start Guide
 
-This guide gets you from zero to running HypoForge in 5 minutes.
+Get from zero to running HypoForge in 5 minutes.
 
 ## Step 1: Install
 
-Open a terminal and run:
+Open a terminal in the project folder and run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-This installs all required packages.
+This installs all the packages HypoForge needs.
 
-## Step 2: Generate Sample Data
+## Step 2: Run the Pipeline (Headless)
+
+Generate sample data and run the pipeline without any UI:
 
 ```bash
 python examples/urban_climate.py
 ```
 
-This creates sample climate data in `data/urban_climate_sample.csv` and runs the pipeline once to show you the output.
+This creates sample data and runs the full pipeline. A report file is saved to disk.
 
-## Step 3: Launch the Dashboard
+## Step 3: Start the API Server (Recommended)
+
+For the new frontend (or any HTTP client), start the FastAPI backend:
+
+```bash
+uvicorn src.api.main:app --reload --port 8000
+```
+
+Open `http://localhost:8000/docs` in your browser. You will see the interactive Swagger UI with all available endpoints.
+
+## Step 4: Quick API Test
+
+Using the Swagger docs page (http://localhost:8000/docs):
+
+1. Click on `POST /api/pipeline`
+2. Click "Try it out"
+3. In `research_goal` field, type: `How does urban green space affect temperature?`
+4. Click "Execute"
+5. Copy the `run_id` from the response
+
+Then use the `run_id` to call `GET /api/runs/{run_id}/hypotheses` to see the results.
+
+## Step 5: Or Use the Streamlit Dashboard
+
+If you prefer the old Streamlit UI:
 
 ```bash
 streamlit run src/ui/app.py
 ```
 
-Your browser opens to the HypoForge dashboard.
-
-## Step 4: Run Your First Pipeline
-
-In the dashboard:
-
-1. Click "Browse files" and select `data/urban_climate_sample.csv`
-2. In the Research Goal box, type: `How does urban green space affect air temperature and PM2.5?`
-3. Click "Run Pipeline"
-
-The pipeline takes 10-30 seconds. When done, explore the tabs:
-
-- **Ranked Hypotheses** -- Click on a hypothesis to see its scores and supporting evidence
-- **Causal Graph & Simulator** -- See the discovered graph. Select a target variable and intervention variable, then drag the slider to simulate what-if scenarios
-- **Report & Export** -- Download the full research proposal
-
-## Step 5: Try Your Own Data
-
-Replace the sample CSV with your own data. The system works best with:
-
-- CSV files with numeric columns
-- At least 50 rows
-- Column names that describe what they measure
+Then upload `data/urban_climate_sample.csv`, enter a research goal, and click "Run Pipeline".
 
 ## What If Something Goes Wrong?
 
-See `docs/troubleshooting.md` for common issues and fixes.
+Check `docs/troubleshooting.md` for common issues and fixes.

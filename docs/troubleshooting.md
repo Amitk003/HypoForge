@@ -1,78 +1,80 @@
 # Troubleshooting
 
-## ModuleNotFoundError: No module named 'src'
+Common issues and how to fix them.
 
-**Problem**: Python cannot find the source code
+## ImportError: No module named 'src'
 
-**Fix**: Run commands from the project root folder and add the path at the top of your script:
+**Problem:** You ran a script from the wrong folder.
 
-```python
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-```
+**Fix:** Always run commands from the project root folder (where `src/` and `requirements.txt` are).
 
-For the dashboard, this is already handled in `src/ui/app.py`. Just run:
+Or add the project root to your Python path:
 
 ```bash
-cd hypoforge
-streamlit run src/ui/app.py
+$env:PYTHONPATH = "$pwd"
 ```
 
-## ImportError: No module named 'chromadb' / 'sentence_transformers'
+## ModuleNotFoundError: No module named 'fastapi'
 
-**Problem**: Missing optional dependencies
+**Problem:** Missing dependencies.
 
-**Fix**: Install them:
+**Fix:** Install all required packages:
 
 ```bash
-pip install chromadb sentence-transformers
+pip install -r requirements.txt
 ```
 
-The system works without these -- it falls back to basic arXiv search without semantic ranking.
+## Pipeline runs but no hypotheses are generated
 
-## No hypotheses generated / Only 1 hypothesis
+**Problem:** The research goal is too short or the generator could not find enough content.
 
-**Problem**: The system needs specific domain nouns in your research goal
-
-**Fix**: Use concrete language. Instead of "What is the effect of the environment on health?", try "How does air pollution affect sleep quality?" Include variable names that could match column names in your data.
-
-## No simulations shown
-
-**Problem**: Simulations need numeric data to train the ML model
-
-**Fix**: Upload a CSV with at least 50 rows and 5+ numeric columns. The last numeric column is used as the target variable.
+**Fix:** Write a more specific research goal. Include the variables you care about. For example, instead of "How does the environment affect health?", write "How does air pollution (PM2.5) and green space affect sleep quality and stress levels in urban areas?"
 
 ## Causal graph is empty
 
-**Problem**: The PC algorithm needs enough data to find correlations
+**Problem:** Not enough numeric data for the PC algorithm.
 
-**Fix**: Upload data with at least 50 rows and 3+ numeric columns. Strong correlations between variables produce better graphs.
+**Fix:** Make sure your data has at least 2 numeric columns with 50+ rows. Check that your CSV is loading correctly by looking at the data preview.
 
-## arXiv API returns no papers
+## Simulation failed
 
-**Problem**: arXiv might be slow or your query might be too specific
+**Problem:** The ML model could not be trained.
 
-**Fix**: The system returns results even without papers (it creates "literature gap" hypotheses). Try shorter queries with fewer stop words.
+**Fix:** Check that:
+- Your data has at least 10 complete rows (no missing values)
+- The target variable is numeric
+- There are other numeric columns to use as features
 
-## Dashboard shows "No data loaded"
+## ChromaDB lock error
 
-**Problem**: The CSV was not uploaded properly
+**Problem:** The vector database gets corrupted if multiple processes try to write to it.
 
-**Fix**: Use the file uploader in the Research Setup tab. Supported formats: CSV (.csv) and Parquet (.parquet). Column names should be descriptive without special characters.
-
-## Pipeline is slow
-
-**Problem**: Some steps take time (arXiv API, ML training, Chroma indexing)
-
-**Fix**: This is normal. The pipeline runs 8 agents sequentially. Most time is spent on arXiv lookups (network) and embedding papers (first run downloads the model).
-
-## Error: "Cannot connect to ChromaDB"
-
-**Problem**: Chroma might be locked from a previous run
-
-**Fix**: Delete the `chroma_db/` folder and retry:
+**Fix:** Delete the chroma_db folder and restart:
 
 ```bash
-rm -rf chroma_db/
+Remove-Item -Recurse -Force chroma_db
 ```
+
+## Port already in use
+
+**Problem:** Another application is using port 8000 or 8501.
+
+**Fix 1:** Find and stop the process using the port:
+
+```bash
+# For port 8501
+Get-Process -Id (Get-NetTCPConnection -LocalPort 8501).OwningProcess | Stop-Process -Force
+
+# For port 8000
+Get-Process -Id (Get-NetTCPConnection -LocalPort 8000).OwningProcess | Stop-Process -Force
+```
+
+**Fix 2:** Use a different port:
+
+```bash
+uvicorn src.api.main:app --port 8001
+```
+
+## Slow pipeline
+
+The pipeline does 8 tasks in sequence. Literature search and causal discovery take the most time. Expect 10-30 seconds for a full run with data. Without data it is faster.

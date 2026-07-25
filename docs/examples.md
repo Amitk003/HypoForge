@@ -1,43 +1,51 @@
 # Examples
 
-HypoForge comes with 3 pre-built domain examples. Each generates sample data and runs the full pipeline.
+HypoForge comes with 3 pre-built examples. Each one generates sample data, runs the full pipeline, and saves a report to disk.
 
-## Urban Microclimate & Air Quality
-
-Explore how green space, traffic, and building density affect temperature and PM2.5.
+## Urban Climate
 
 ```bash
 python examples/urban_climate.py
 ```
 
-## Biodiversity & Climate Adaptation
+This creates data about green space, temperature, PM2.5, and traffic in different city areas.
 
-Study how temperature and precipitation affect species richness in fragmented habitats.
+Research question: "How does urban green space affect local air temperature and air quality?"
+
+## Biodiversity and Climate
 
 ```bash
 python examples/biodiversity_climate.py
 ```
 
-## Environmental Health & Wearables
+This creates data about species diversity, temperature, rainfall, and elevation in different locations.
 
-Investigate how air quality and noise exposure impact sleep quality and heart rate.
+## Environmental Health
 
 ```bash
 python examples/health_environment.py
 ```
 
-## Running Your Own Data
+This creates data about sleep quality, stress, air pollution, noise, and exercise hours.
 
-Replace the sample data with your own CSV or Parquet file:
+## Running Without Examples
 
-```bash
-python -c "
+You can run the pipeline directly from Python:
+
+```python
 from src.orchestrator import run_pipeline
 from src.state import HypothesisState
-state = HypothesisState(research_goal='Your question here', data_path='path/to/your/data.csv')
+
+state = HypothesisState(research_goal="How does X affect Y?")
 result = run_pipeline(state)
-print(result.meta_review_report)
-"
+
+for h in result.top_hypotheses:
+    print(f"{h.title}: {h.novelty_score}")
 ```
 
-Or upload your file through the Streamlit UI at `src/ui/app.py`.
+Or use the API:
+
+```bash
+curl -X POST http://localhost:8000/api/pipeline \
+  -F "research_goal=How does X affect Y?"
+```

@@ -1,76 +1,77 @@
 # Use Cases
 
-HypoForge works on any domain where you have a research question and optionally some data. Here are concrete scenarios.
+Here are real-world examples of what you can do with HypoForge.
 
 ## Urban Climate Research
 
-**Goal**: Understand how green space affects temperature and air quality in cities
+**Question:** How does urban green space affect local air temperature and air quality?
 
-**Data needed**: CSV with columns like temperature, green space percentage, traffic density, building height, PM2.5
+**Data needed:** CSV with columns like green_space_pct, temperature, pm25, traffic_density for different city areas.
 
-**What you get**:
-- A causal graph showing how green space, traffic, and buildings connect to temperature and PM2.5
-- Ranked hypotheses (e.g., "Increasing green space by 10% reduces peak temperature by X degrees")
-- Counterfactual simulations showing predicted effects at different green space levels
-- An experiment protocol for measuring these effects in a real neighborhood
+**What you get:**
+- A causal graph showing if green space directly cools temperature
+- Ranked hypotheses with supporting evidence
+- Counterfactual simulation: what happens to temperature if you increase green space by 20%?
+- An experiment protocol to test the findings
 
-**Example**: `python examples/urban_climate.py`
+**Run it:**
 
-## Biodiversity and Climate Adaptation
+```bash
+python examples/urban_climate.py
+```
 
-**Goal**: Study how temperature and rainfall changes affect local wildlife
+## Biodiversity and Climate
 
-**Data needed**: CSV with columns like species count, annual temperature, rainfall, habitat area, human population
+**Question:** How do changes in temperature and rainfall affect species diversity?
 
-**What you get**:
-- Causal links between climate variables and species richness
-- Hypotheses about which factor matters most (habitat loss vs temperature vs rainfall)
-- Simulations showing species count changes under different climate scenarios
-- Field study protocol with sample size requirements
+**Data needed:** CSV with columns like species_richness, temperature, rainfall, elevation for different locations.
 
-**Example**: `python examples/biodiversity_climate.py`
+**What you get:**
+- Causal relationships between climate factors and biodiversity
+- Ranked hypotheses about which factor matters most
+- Simulated scenarios for different climate conditions
+
+**Run it:**
+
+```bash
+python examples/biodiversity_climate.py
+```
 
 ## Environmental Health
 
-**Goal**: Investigate how air quality and noise affect sleep and heart health
+**Question:** Does air quality and noise pollution affect sleep quality and stress levels?
 
-**Data needed**: CSV with columns like sleep quality score, AQI exposure, noise level, physical activity, heart rate variability
+**Data needed:** CSV with columns like sleep_quality, stress_score, pm25, noise_level, exercise_hours.
 
-**What you get**:
-- Causal graph showing how environment factors connect to health outcomes
-- Hypotheses about which environmental factor has the biggest health impact
-- Counterfactual predictions (e.g., "If AQI drops by 20 points, sleep quality improves by X%")
-- Wearable study protocol with recommended participant count
+**What you get:**
+- Discovered confounders (hidden factors like exercise that affect both)
+- Testable hypotheses with safety flags
+- Experiment protocol with specific measurements
 
-**Example**: `python examples/health_environment.py`
+**Run it:**
+
+```bash
+python examples/health_environment.py
+```
 
 ## Agriculture
 
-**Goal**: Understand how soil properties and weather affect crop yield
+**Question:** How do soil nutrients and water availability affect crop yield?
 
-**Data needed**: CSV with columns like yield, rainfall, soil nitrogen, temperature, pest count
+**Data needed:** CSV with columns like yield, nitrogen, phosphorus, rainfall, temperature for different plots.
 
-**What you get**:
-- Discovered causal relationships between soil, weather, and yield
-- Testable hypotheses about intervention strategies
-- Simulations of yield under different fertilizer or irrigation levels
-- Field trial protocol
+**What you get:**
+- Causal graph showing direct vs indirect effects
+- Counterfactual: what yield would be with more nitrogen?
+- Experiment design with recommended sample size
 
 ## Education Research
 
-**Goal**: Study how class size and teaching method affect student performance
+**Question:** How do class size and teaching method affect student performance?
 
-**Data needed**: CSV with columns like test scores, class size, hours of instruction, teacher experience, attendance rate
+**Data needed:** CSV with columns like test_score, class_size, teaching_method, study_hours, parent_education.
 
-**What you get**:
-- Causal graph of educational factors
-- Hypotheses about which interventions work best
-- Experiment protocol with control/treatment design
-
-## Getting Started With Your Own Data
-
-1. Prepare a CSV with numeric columns (at least 5 columns, at least 50 rows)
-2. Think of a research question that involves two or more of your columns
-3. Launch the dashboard: `streamlit run src/ui/app.py`
-4. Upload your CSV and enter your question
-5. Click "Run Pipeline"
+**What you get:**
+- Identified confounders (like study hours)
+- Ranked hypotheses with critique notes
+- Protocol for a controlled experiment
