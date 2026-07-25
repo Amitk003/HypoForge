@@ -1,15 +1,20 @@
 import streamlit as st
 import pandas as pd
 import os
-import tempfile
+from pathlib import Path
 
 from src.orchestrator import run_pipeline
 from src.state import HypothesisState, CausalGraphData
 from src.data_engine import load_dataframe, summarize_dataframe
 from src.causal.causal_discovery import build_graph_from_data
+from src.simulation.surrogate_sim import train_surrogate, counterfactual_predict
 
 
 st.set_page_config(page_title="HypoForge", layout="wide")
+
+# Ensure persistent uploads directory exists
+UPLOAD_DIR = Path(__file__).parent.parent.parent / "data" / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 if "state" not in st.session_state:
     st.session_state.state = HypothesisState()
@@ -17,10 +22,12 @@ if "pipeline_run" not in st.session_state:
     st.session_state.pipeline_run = False
 if "uploaded_data" not in st.session_state:
     st.session_state.uploaded_data = None
+if "saved_csv_path" not in st.session_state:
+    st.session_state.saved_csv_path = None
 
 
 st.title("HypoForge")
-st.caption("Multi-agent AI co-scientist. Enter a research goal and optional data to generate ranked, testable hypotheses.")
+st.caption("Multi-agent AI co-scientist. Enter a research goal and optional dataset to generate, debate, simulate, and design testable scientific hypotheses.")
 
 
 tab_setup, tab_debate, tab_hypotheses, tab_sim, tab_report = st.tabs([
@@ -61,25 +68,22 @@ with tab_setup:
     if run_btn and research_goal:
         data_path = None
         if st.session_state.uploaded_data is not None:
-            tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".csv")
-            tmp.write(st.session_state.uploaded_data.getvalue())
-            tmp.close()
-            data_path = tmp.name
+            saved_file_path = UPLOAD_DIR / st.session_state.uploaded_data.name
+            with open(saved_file_path, "wb") as f:
+                f.write(st.session_state.uploaded_data.getvalue())
+            data_path = str(saved_file_path)
+            st.session_state.saved_csv_path = data_path
 
         state = HypothesisState(
             research_goal=research_goal,
             data_path=data_path,
         )
 
-        with st.spinner("Running pipeline..."):
+        with st.spinner("Running multi-agent co-scientist pipeline..."):
             result = run_pipeline(state)
 
         st.session_state.state = result
         st.session_state.pipeline_run = True
-
-        if data_path and os.path.exists(data_path):
-            os.unlink(data_path)
-
         st.success("Pipeline complete!")
 
     if st.session_state.pipeline_run:
@@ -107,11 +111,11 @@ with tab_debate:
         else:
             for msg in state.debate_log:
                 with st.chat_message(msg.agent_role):
-                    st.markdown(f"**{msg.agent_role}**")
+                    st.markdown(f"**Agent: {msg.agent_role.title()}**")
                     st.markdown(f"*Claim:* {msg.claim}")
                     if msg.counter_argument:
-                        st.markdown(f"*Response:* {msg.counter_argument}")
-                    st.caption(f"Status: {msg.consensus_status}")
+                        st.markdown(f"*Response / Critique:* {msg.counter_argument}")
+                    st.caption(f"Status: {msg.consensus_status} | Timestamp: {msg.timestamp}")
 
 
 with tab_hypotheses:
@@ -159,7 +163,7 @@ with tab_hypotheses:
                     # Link simulation if exists
                     sims = [s for s in state.simulations if s.hypothesis_id == h.id]
                     for sim in sims:
-                        st.markdown(f"**Simulation**: Change {sim.intervention_variable} to {sim.intervention_value} -> {sim.target_variable} delta: {sim.delta:+.4f}")
+                        st.markdown(f"**Simulation Outcome**: Intervention on **{sim.intervention_variable}** $\\rightarrow$ Predicted **{sim.target_variable}** change: **{sim.delta:+.4f}**")
 
 
 with tab_sim:
@@ -169,24 +173,25 @@ with tab_sim:
         state = st.session_state.state
 
         if state.causal_graph and state.causal_graph.dot_source:
-            st.subheader("Causal Graph (DAG)")
+            st.subheader("Discovered Causal Graph (DAG)")
             try:
-                import graphviz
-                graph = graphviz.Source(state.causal_graph.dot_source)
-                st.graphviz_chart(graph)
-            except ImportError:
-                st.text(state.causal_graph.dot_source)
+                st.graphviz_chart(state.causal_graph.dot_source)
+            except Exception:
+                st.code(state.causal_graph.dot_source, language="dot")
         else:
             st.info("No causal graph generated. Provide data to enable causal discovery.")
 
         if state.simulations:
-            st.subheader("Counterfactual Simulations")
+            st.subheader("Counterfactual Simulations ($do(X=x)$)")
             sim_data = []
             for s in state.simulations:
                 sim_data.append({
-                    "Hypothesis": s.hypothesis_id[:8],
-                    "Intervention": s.intervention_variable,
-                    "Target": s.target_variable,
+                    "Hypothesis ID": s.hypothesis_id[:8] if s.hypothesis_id else "N/A",
+                    "Intervention Variable": s.intervention_variable,
+                    "Target Outcome": s.target_variable,
+                    "Intervention Value": f"{s.intervention_value:.2f}" if s.intervention_value is not None else "N/A",
+                    "Baseline Outcome": f"{s.baseline_outcome:.4f}" if s.baseline_outcome is not None else "N/A",
+                    "Predicted Outcome": f"{s.predicted_outcome:.4f}" if s.predicted_outcome is not None else "N/A",
                     "Delta": f"{s.delta:+.4f}" if s.delta is not None else "N/A",
                     "95% CI Lower": f"{s.ci_lower:.4f}" if s.ci_lower is not None else "N/A",
                     "95% CI Upper": f"{s.ci_upper:.4f}" if s.ci_upper is not None else "N/A",
@@ -194,7 +199,7 @@ with tab_sim:
             if sim_data:
                 st.dataframe(pd.DataFrame(sim_data), use_container_width=True)
         else:
-            st.info("No simulations available. Provide data with numeric columns.")
+            st.info("No simulations available. Upload a dataset with numeric variables.")
 
 
 with tab_report:
@@ -205,11 +210,12 @@ with tab_report:
         if state.meta_review_report:
             st.markdown(state.meta_review_report)
             st.download_button(
-                label="Download Report (Markdown)",
+                label="Download Research Proposal Report (Markdown)",
                 data=state.meta_review_report,
-                file_name="hypoforge_report.md",
+                file_name="hypoforge_research_proposal.md",
                 mime="text/markdown",
                 use_container_width=True,
             )
         else:
             st.info("No report generated.")
+
