@@ -9,9 +9,6 @@ try:
 except ImportError:
     nx = None
 
-_PC_DF = None
-
-
 def calculate_partial_correlation(df: pd.DataFrame, x: str, y: str, z_list: list[str]) -> float:
     if not z_list:
         return float(df[x].corr(df[y]))
