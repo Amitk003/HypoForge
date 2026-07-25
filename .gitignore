@@ -24,4 +24,4 @@ env/
 
 chroma_db/
 faiss_index/
-hypoforge_report_*.md
+hypoforge_*.md

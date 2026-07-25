@@ -71,7 +71,7 @@ def generate_hypotheses(state: HypothesisState) -> HypothesisState:
         )
         candidates.append(h)
 
-    state.hypotheses = candidates
+    state.hypotheses = candidates[:state.max_hypotheses]
     state.pipeline_stage = "hypotheses_generated"
     return state
 

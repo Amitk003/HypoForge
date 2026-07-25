@@ -1,0 +1,44 @@
+2026-07-25 21:10:58.659 Uvicorn server started on :::8501
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://192.168.1.4:8501
+  External URL: http://103.161.98.27:8501
+
+Skipping data after last boundary
+2026-07-25 21:14:23.082 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-07-25 21:14:38.173 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Skipping data after last boundary
+2026-07-25 21:16:58.504 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-07-25 21:17:02.033 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Skipping data after last boundary
+2026-07-25 21:19:13.154 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-07-25 21:19:14.217 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2026-07-25 21:19:53.640 An update to the [server] config option section was detected. To have these changes be reflected, please restart streamlit.
+2026-07-25 21:19:54.869 An update to the [server] config option section was detected. To have these changes be reflected, please restart streamlit.
+2026-07-25 21:20:14.963 An update to the [server] config option section was detected. To have these changes be reflected, please restart streamlit.
