@@ -4,6 +4,30 @@ CUSTOM_CSS = """
 /* === Base === */
 .stApp { font-family: 'Inter', sans-serif; }
 
+/* === Header === */
+.hf-header {
+    display: flex; flex-direction: column;
+    margin-bottom: 8px;
+}
+.hf-header-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600; font-size: 20px;
+    color: #0F172A; margin: 0;
+}
+.hf-header-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400; font-size: 12px;
+    color: #94A3B8; margin: 0;
+}
+.hf-header-goal {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px; color: #475569;
+    margin-top: 4px;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 600px;
+}
+
 /* === Cards === */
 .hf-card {
     background: #FFFFFF;
