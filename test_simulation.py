@@ -74,8 +74,9 @@ def test_synthesize_review():
     state = HypothesisState(research_goal="How does green space affect temperature?", hypotheses=[h2, h1])
     result = synthesize_review(state)
     assert result.pipeline_stage == "review_synthesized"
-    assert "Meta-Review" in result.literature_context[-1]
+    assert "Meta-Review" in result.meta_review_report
     print("test_synthesize_review PASSED")
+
 
 
 def test_end_to_end_simulation():

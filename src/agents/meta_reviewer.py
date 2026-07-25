@@ -5,7 +5,7 @@ def synthesize_review(state: HypothesisState) -> HypothesisState:
     lines = []
     lines.append("# Meta-Review: Hypothesis Synthesis Report")
     lines.append("")
-    lines.append(f"## Research Goal")
+    lines.append("## Research Goal")
     lines.append(state.research_goal)
     lines.append("")
 
@@ -19,7 +19,7 @@ def synthesize_review(state: HypothesisState) -> HypothesisState:
     if state.top_hypotheses:
         lines.append("## Top Ranked Hypotheses")
         for i, h in enumerate(state.top_hypotheses[:5], 1):
-            lines.append(f"")
+            lines.append("")
             lines.append(f"### {i}. {h.title}")
             lines.append(f"**Statement**: {h.core_statement}")
             lines.append(f"**Novelty**: {h.novelty_score:.2f} | **Causal Rigor**: {h.causal_rigor_score:.2f} | **Testability**: {h.testability_score:.2f} | **Impact**: {h.impact_score:.2f}")
@@ -36,7 +36,7 @@ def synthesize_review(state: HypothesisState) -> HypothesisState:
         lines.append("")
         lines.append("## Simulation Results")
         for sim in state.simulations:
-            lines.append(f"")
+            lines.append("")
             lines.append(f"- **Intervention**: Change {sim.intervention_variable} to {sim.intervention_value}")
             lines.append(f"- **Effect on {sim.target_variable}**: {sim.delta:+.4f} (baseline: {sim.baseline_outcome:.4f}, predicted: {sim.predicted_outcome:.4f})")
             lines.append(f"- **95% CI**: [{sim.ci_lower:.4f}, {sim.ci_upper:.4f}]")
@@ -45,7 +45,7 @@ def synthesize_review(state: HypothesisState) -> HypothesisState:
         lines.append("")
         lines.append("## Experiment Protocols")
         for p in state.protocols:
-            lines.append(f"")
+            lines.append("")
             lines.append(f"### {p.title}")
             lines.append(f"- **Design**: {p.recommended_test}")
             lines.append(f"- **Sample size needed**: {p.required_sample_size}")
@@ -58,8 +58,9 @@ def synthesize_review(state: HypothesisState) -> HypothesisState:
         lines.append("")
         lines.append("## Warnings / Errors")
         for e in state.errors:
-            lines.append(f"- {e.split(chr(10))[0]}")
+            lines.append(f"- {e.splitlines()[0]}")
 
-    state.literature_context.append("\n\n" + "\n".join(lines))
+    state.meta_review_report = "\n".join(lines)
     state.pipeline_stage = "review_synthesized"
     return state
+

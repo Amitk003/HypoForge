@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.model_selection import train_test_split
 from src.state import HypothesisState, SimulationResult
 
 
@@ -16,11 +15,18 @@ def train_surrogate(df: pd.DataFrame, target_col: str) -> Optional[object]:
     y = num_df[target_col]
     if X.shape[1] < 1 or len(y) < 10:
         return None
-    is_classification = y.nunique() < 10
+
+    # Proper classification vs regression check
+    is_classification = not pd.api.types.is_float_dtype(y) and y.nunique() <= 5
     model = RandomForestClassifier if is_classification else RandomForestRegressor
     clf = model(n_estimators=100, random_state=42, n_jobs=-1)
     clf.fit(X, y)
-    return {"model": clf, "feature_cols": X.columns.tolist(), "target_col": target_col, "is_classification": is_classification}
+    return {
+        "model": clf,
+        "feature_cols": X.columns.tolist(),
+        "target_col": target_col,
+        "is_classification": is_classification
+    }
 
 
 def counterfactual_predict(model_dict: dict, df: pd.DataFrame, intervention_var: str, intervention_value: float) -> Optional[SimulationResult]:
@@ -42,7 +48,7 @@ def counterfactual_predict(model_dict: dict, df: pd.DataFrame, intervention_var:
     perturbed_preds = model.predict(X_perturbed)
     perturbed_mean = float(np.mean(perturbed_preds))
 
-    n_bootstrap = 50
+    n_bootstrap = 30
     deltas = []
     n = len(X)
     for _ in range(n_bootstrap):
@@ -85,11 +91,12 @@ def run_simulations(state: HypothesisState) -> HypothesisState:
         if model_dict is None:
             return state
 
-        # Run counterfactual for each top hypothesis
+        # Run counterfactual for each top hypothesis with robust multi-word feature matching
         for h in state.top_hypotheses:
-            words = h.core_statement.lower().split()
+            statement_lower = h.core_statement.lower()
             for col in model_dict["feature_cols"]:
-                if col.lower() in words or col.lower().replace("_", " ") in " ".join(words):
+                col_clean = col.lower().replace("_", " ")
+                if col.lower() in statement_lower or col_clean in statement_lower:
                     baseline_val = float(df[col].mean())
                     perturbed_val = baseline_val * 1.2
                     result = counterfactual_predict(model_dict, df, col, perturbed_val)
@@ -101,3 +108,4 @@ def run_simulations(state: HypothesisState) -> HypothesisState:
         pass
     state.pipeline_stage = "simulation_complete"
     return state
+
