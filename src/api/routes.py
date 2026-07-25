@@ -2,9 +2,6 @@ import uuid
 from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from src.state import HypothesisState
-from src.orchestrator import run_pipeline
-from src.data_engine import load_dataframe
-from src.simulation.surrogate_sim import train_surrogate, counterfactual_predict
 
 router = APIRouter()
 
@@ -26,6 +23,8 @@ def start_pipeline(
     alpha: float = Form(0.05),
     max_hypotheses: int = Form(10),
 ):
+    from src.orchestrator import run_pipeline
+
     data_path = None
     if file and file.filename:
         file_path = UPLOAD_DIR / file.filename
@@ -125,6 +124,9 @@ def run_simulation(
     intervention_variable: str = Form(...),
     intervention_value: float = Form(...),
 ):
+    from src.data_engine import load_dataframe
+    from src.simulation.surrogate_sim import train_surrogate, counterfactual_predict
+
     state = _runs.get(run_id)
     if not state:
         raise HTTPException(status_code=404, detail="Run not found")

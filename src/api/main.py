@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
@@ -21,3 +22,6 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+
+port = os.environ.get("PORT", "10000")
+print(f"[HypoForge] Starting on port {port}", flush=True)
