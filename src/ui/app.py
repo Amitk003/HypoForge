@@ -22,7 +22,8 @@ from src.ui.components.report import render_report
 
 
 st.set_page_config(page_title="HypoForge", layout="wide")
-st.markdown(FONT_LINK + "<style>" + CUSTOM_CSS + "</style>", unsafe_allow_html=True)
+st.markdown(FONT_LINK, unsafe_allow_html=True)
+st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
 
 UPLOAD_DIR = Path(__file__).parent.parent.parent / "data" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
