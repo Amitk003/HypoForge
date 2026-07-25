@@ -3,6 +3,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import ScorePill from '@/components/ScorePill';
+import Spinner from '@/components/Spinner';
+import EmptyState from '@/components/EmptyState';
 import { getHypotheses, type Hypothesis } from '@/lib/api';
 
 interface HypothesesProps {
@@ -50,15 +52,11 @@ export default function HypothesesPage({ runId }: HypothesesProps) {
   }, [runId]);
 
   if (!runId) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Run the pipeline to generate hypotheses.
-      </div>
-    );
+    return <EmptyState title="No hypotheses" description="Run the pipeline to generate and rank hypotheses." />;
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-text-secondary">Loading...</div>;
+    return <Spinner text="Loading hypotheses..." />;
   }
 
   const sorted = sortHypotheses(
@@ -67,11 +65,7 @@ export default function HypothesesPage({ runId }: HypothesesProps) {
   );
 
   if (hypotheses.length === 0) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        No hypotheses generated.
-      </div>
-    );
+    return <EmptyState title="No hypotheses generated" description="Check the Pipeline tab for any errors during execution." />;
   }
 
   return (

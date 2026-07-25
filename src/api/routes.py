@@ -121,9 +121,9 @@ def get_causal_graph(run_id: str):
 @router.post("/runs/{run_id}/simulate")
 def run_simulation(
     run_id: str,
-    target_variable: str,
-    intervention_variable: str,
-    intervention_value: float,
+    target_variable: str = Form(...),
+    intervention_variable: str = Form(...),
+    intervention_value: float = Form(...),
 ):
     state = _runs.get(run_id)
     if not state:

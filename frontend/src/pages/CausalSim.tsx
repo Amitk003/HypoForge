@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Simulator from '@/components/Simulator';
+import Spinner from '@/components/Spinner';
+import EmptyState from '@/components/EmptyState';
 import { getCausalGraph, type CausalGraph } from '@/lib/api';
 
 interface CausalSimProps {
@@ -19,23 +21,15 @@ export default function CausalSimPage({ runId }: CausalSimProps) {
   }, [runId]);
 
   if (!runId) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Upload a dataset with numeric variables to enable causal discovery.
-      </div>
-    );
+    return <EmptyState title="No data uploaded" description="Run the pipeline with a dataset to enable causal discovery." />;
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-text-secondary">Loading...</div>;
+    return <Spinner text="Loading causal graph..." />;
   }
 
   if (!graph || graph.nodes.length === 0) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Upload a dataset with numeric variables to enable causal discovery.
-      </div>
-    );
+    return <EmptyState title="No causal graph" description="Upload a dataset with numeric variables to enable causal discovery." />;
   }
 
   return (

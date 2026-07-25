@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import PipelineStepper from '@/components/PipelineStepper';
+import Spinner from '@/components/Spinner';
+import EmptyState from '@/components/EmptyState';
 import { getRunStatus, type PipelineResponse } from '@/lib/api';
 
 interface PipelineProps {
@@ -18,23 +20,15 @@ export default function PipelinePage({ runId }: PipelineProps) {
   }, [runId]);
 
   if (!runId) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Run the pipeline to see agent progress.
-      </div>
-    );
+    return <EmptyState title="No pipeline run" description="Run the pipeline from the Setup tab to see agent progress." />;
   }
 
   if (loading) {
-    return <div className="text-center py-12 text-text-secondary">Loading...</div>;
+    return <Spinner text="Loading pipeline status..." />;
   }
 
   if (!result) {
-    return (
-      <div className="text-center py-12 text-text-secondary">
-        Run not found.
-      </div>
-    );
+    return <EmptyState title="Run not found" description="The pipeline run data is no longer available." />;
   }
 
   const timings = result.timings || {};
