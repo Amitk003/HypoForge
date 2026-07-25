@@ -20,12 +20,13 @@ CUSTOM_CSS = """
     gap: 4px;
     border: 1px solid #E2E8F0;
     border-radius: 9999px;
-    padding: 4px 10px;
-    font-size: 12px;
+    padding: 3px 8px;
+    font-size: 11px;
     font-family: 'Inter', sans-serif;
     color: #475569;
-    margin-right: 6px;
-    margin-bottom: 4px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+    white-space: nowrap;
 }
 .score-pill--high { border-color: #0D9488; }
 .score-pill--low { border-color: #D97706; }
@@ -70,8 +71,59 @@ CUSTOM_CSS = """
 .hf-step-label {
     font-size: 10px; color: #475569;
     text-align: center; margin-top: 4px;
-    max-width: 100px;
+    max-width: 80px;
     line-height: 1.2;
+}
+.hf-step-label--error { color: #DC2626; font-weight: 500; }
+
+/* === Simulation Result Inline === */
+.hf-sim-result {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 8px 0;
+    font-size: 13px;
+}
+.hf-sim-result strong { color: #0F172A; }
+.hf-sim-delta-pos { color: #0D9488; font-weight: 600; }
+.hf-sim-delta-neg { color: #DC2626; font-weight: 600; }
+
+/* === Protocol Inline === */
+.hf-protocol {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 8px 0;
+}
+.hf-protocol-header {
+    font-weight: 600; font-size: 13px; color: #0F172A;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #F1F5F9;
+    padding-bottom: 6px;
+}
+.hf-protocol-meta {
+    font-size: 12px; color: #475569;
+    margin-bottom: 8px;
+}
+.hf-protocol-steps {
+    font-size: 13px; color: #0F172A;
+    line-height: 1.6;
+}
+.hf-protocol-steps ol {
+    margin: 4px 0;
+    padding-left: 20px;
+}
+.hf-protocol-steps li {
+    margin-bottom: 4px;
+}
+
+/* === Section Dividers === */
+.hf-divider {
+    border: none;
+    border-top: 1px solid #E2E8F0;
+    margin: 16px 0;
 }
 
 /* === Print Styles === */

@@ -93,6 +93,8 @@ with tab_setup:
         state = HypothesisState(
             research_goal=research_goal,
             data_path=data_path,
+            alpha=alpha,
+            max_hypotheses=max_hypotheses,
         )
 
         with st.spinner("Running multi-agent pipeline..."):
@@ -117,80 +119,65 @@ with tab_setup:
 with tab_pipeline:
     if not st.session_state.pipeline_run:
         render_empty_state("Run the pipeline to see agent progress.")
+    else:
+        state = st.session_state.state
+        timings = getattr(state, "pipeline_stage_timings", {})
 
-    state = st.session_state.state
-    timings = getattr(state, "pipeline_stage_timings", {})
-
-    render_stepper(timings, state.errors)
-    render_stage_detail(timings, state.errors)
-    render_activity_log(state)
+        render_stepper(timings, state.error_stage_keys)
+        render_stage_detail(timings, state.errors, state.error_stage_keys)
+        render_activity_log(state)
 
 
 with tab_hypotheses:
     if not st.session_state.pipeline_run:
         render_empty_state("Run the pipeline to generate hypotheses.")
-
-    state = st.session_state.state
-    if not state.hypotheses:
-        st.info("No hypotheses generated.")
     else:
-        sort_by, filter_by = render_sort_filter()
-        ranked = apply_sort_filter(state.hypotheses, sort_by, filter_by)
-        for i, h in enumerate(ranked, 1):
-            render_hypothesis_card(h, i)
-
-            sims = [s for s in state.simulations if s.hypothesis_id == h.id]
-            for sim in sims:
-                st.markdown(
-                    f"**Simulation Outcome**: Intervention on **{sim.intervention_variable}** "
-                    f"to {sim.intervention_value} &rarr; Predicted **{sim.target_variable}** "
-                    f"change: **{sim.delta:+.4f}**",
-                    unsafe_allow_html=True,
-                )
-
-            protocols = [p for p in state.protocols if p.hypothesis_id == h.id]
-            for p in protocols:
-                with st.expander("Linked Protocol"):
-                    if p.step_by_step_procedure:
-                        for j, step in enumerate(p.step_by_step_procedure, 1):
-                            st.markdown(f"{j}. {step}")
-                    st.code("\n".join(p.step_by_step_procedure), language=None)
+        state = st.session_state.state
+        if not state.hypotheses:
+            st.info("No hypotheses generated.")
+        else:
+            sort_by, filter_by = render_sort_filter()
+            ranked = apply_sort_filter(state.hypotheses, sort_by, filter_by)
+            for i, h in enumerate(ranked, 1):
+                sims = [s for s in state.simulations if s.hypothesis_id == h.id]
+                protos = [p for p in state.protocols if p.hypothesis_id == h.id]
+                render_hypothesis_card(h, i, simulations=sims, protocols=protos)
 
 
 with tab_causal:
     if not st.session_state.pipeline_run:
         render_empty_state("Run the pipeline to see causal graph and simulations.")
+    else:
+        state = st.session_state.state
+        col_graph, col_sim = st.columns([3, 2])
 
-    state = st.session_state.state
-    col_graph, col_sim = st.columns([3, 2])
+        with col_graph:
+            if state.causal_graph and state.causal_graph.nodes:
+                render_graph(state.causal_graph)
+            else:
+                st.info("No causal graph generated. Provide data to enable causal discovery.")
 
-    with col_graph:
-        if state.causal_graph and state.causal_graph.nodes:
-            render_graph(state.causal_graph)
-        else:
-            st.info("No causal graph generated. Provide data to enable causal discovery.")
+        with col_sim:
+            csv_path = st.session_state.get("saved_csv_path", None)
+            render_simulator(csv_path)
 
-    with col_sim:
-        csv_path = st.session_state.get("saved_csv_path", None)
-        render_simulator(csv_path)
-
-        if state.simulations and not (csv_path and Path(csv_path).exists()):
-            sim_data = []
-            for s in state.simulations:
-                sim_data.append({
-                    "Hypothesis ID": s.hypothesis_id[:8] if s.hypothesis_id else "N/A",
-                    "Intervention": s.intervention_variable,
-                    "Target": s.target_variable,
-                    "Delta": f"{s.delta:+.4f}" if s.delta is not None else "N/A",
-                })
-            if sim_data:
-                st.subheader("Stored Simulations")
-                st.dataframe(pd.DataFrame(sim_data), use_container_width=True)
+            if state.simulations and not (csv_path and Path(csv_path).exists()):
+                sim_data = []
+                for s in state.simulations:
+                    sim_data.append({
+                        "Hypothesis ID": s.hypothesis_id[:8] if s.hypothesis_id else "N/A",
+                        "Intervention": s.intervention_variable,
+                        "Target": s.target_variable,
+                        "Delta": f"{s.delta:+.4f}" if s.delta is not None else "N/A",
+                    })
+                if sim_data:
+                    st.subheader("Stored Simulations")
+                    st.dataframe(pd.DataFrame(sim_data), use_container_width=True)
 
 
 with tab_report:
     if not st.session_state.pipeline_run:
         render_empty_state("Run the pipeline to generate a report.")
-
-    state = st.session_state.state
-    render_report(state)
+    else:
+        state = st.session_state.state
+        render_report(state)
