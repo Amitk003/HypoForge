@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import Header from '@/components/Header'
 import Setup from '@/pages/Setup'
@@ -16,9 +16,34 @@ const tabs = [
   { path: '/report', label: 'Report' },
 ]
 
+const LS_RUN_ID = 'hypoforge_run_id'
+const LS_GOAL = 'hypoforge_research_goal'
+
+function loadRunId(): string | null {
+  try { return localStorage.getItem(LS_RUN_ID) } catch { return null }
+}
+
+function saveRunId(id: string | null) {
+  try {
+    if (id) localStorage.setItem(LS_RUN_ID, id)
+    else localStorage.removeItem(LS_RUN_ID)
+  } catch {}
+}
+
+function loadResearchGoal(): string {
+  try { return localStorage.getItem(LS_GOAL) || '' } catch { return '' }
+}
+
+function saveResearchGoal(goal: string) {
+  try { localStorage.setItem(LS_GOAL, goal) } catch {}
+}
+
 function App() {
-  const [runId, setRunId] = useState<string | null>(null)
-  const [researchGoal, setResearchGoal] = useState('')
+  const [runId, setRunId] = useState<string | null>(loadRunId)
+  const [researchGoal, setResearchGoal] = useState(loadResearchGoal)
+
+  useEffect(() => { saveRunId(runId) }, [runId])
+  useEffect(() => { saveResearchGoal(researchGoal) }, [researchGoal])
 
   function handlePipelineComplete(result: PipelineResponse) {
     setRunId(result.run_id)

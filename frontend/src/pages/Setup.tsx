@@ -8,6 +8,21 @@ import { Separator } from '@/components/ui/separator';
 import { InlineSpinner } from '@/components/Spinner';
 import { runPipeline, type PipelineResponse } from '@/lib/api';
 
+const PRESETS = [
+  {
+    label: 'Urban Climate',
+    goal: 'How does urban green space affect local air temperature and air quality?',
+  },
+  {
+    label: 'Environmental Health',
+    goal: 'How does long-term exposure to air pollution and noise affect sleep quality in urban populations?',
+  },
+  {
+    label: 'Biodiversity',
+    goal: 'How do changes in local temperature and precipitation affect species diversity in forest ecosystems?',
+  },
+];
+
 interface SetupProps {
   onPipelineComplete: (result: PipelineResponse) => void;
   onResearchGoalChange: (goal: string) => void;
@@ -15,17 +30,21 @@ interface SetupProps {
 
 export default function Setup({ onPipelineComplete, onResearchGoalChange }: SetupProps) {
   const [goal, setGoal] = useState('');
-
-  function handleGoalChange(value: string) {
-    setGoal(value);
-    onResearchGoalChange(value);
-  }
   const [file, setFile] = useState<File | null>(null);
   const [alpha, setAlpha] = useState('0.05');
   const [maxH, setMaxH] = useState('10');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [lastRun, setLastRun] = useState<PipelineResponse | null>(null);
+
+  function handleGoalChange(value: string) {
+    setGoal(value);
+    onResearchGoalChange(value);
+  }
+
+  function applyPreset(preset: typeof PRESETS[number]) {
+    handleGoalChange(preset.goal);
+  }
 
   async function handleRun() {
     if (!goal.trim()) return;
@@ -51,9 +70,16 @@ export default function Setup({ onPipelineComplete, onResearchGoalChange }: Setu
             id="goal"
             placeholder="e.g. How does urban green space affect local air temperature and air quality?"
             className="h-[120px]"
-          value={goal}
-          onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleGoalChange(e.target.value)}
+            value={goal}
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) => handleGoalChange(e.target.value)}
           />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => (
+            <Button key={p.label} variant="outline" size="sm" onClick={() => applyPreset(p)}>
+              {p.label}
+            </Button>
+          ))}
         </div>
         <div>
           <Label htmlFor="file">Upload data (CSV or Parquet)</Label>

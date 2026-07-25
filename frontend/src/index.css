@@ -1,16 +1,45 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-page: #F8FAFC;
-  --color-bg-surface: #FFFFFF;
-  --color-border-default: #E2E8F0;
-  --color-border-subtle: #F1F5F9;
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #475569;
-  --color-text-tertiary: #94A3B8;
-  --color-accent-primary: #1E40AF;
-  --color-accent-success: #0D9488;
-  --color-accent-warning: #D97706;
-  --color-accent-danger: #DC2626;
+  --color-bg-page: #0B1121;
+  --color-bg-surface: rgba(15, 23, 42, 0.6);
+  --color-bg-card: rgba(30, 41, 59, 0.4);
+  --color-border-default: rgba(148, 163, 184, 0.15);
+  --color-border-subtle: rgba(148, 163, 184, 0.08);
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-tertiary: #64748B;
+  --color-accent-primary: #60A5FA;
+  --color-accent-success: #34D399;
+  --color-accent-warning: #FBBF24;
+  --color-accent-danger: #F87171;
   --color-accent-info: #38BDF8;
+
+  --color-card: rgba(30, 41, 59, 0.4);
+  --color-card-foreground: #F1F5F9;
+  --color-muted: rgba(148, 163, 184, 0.1);
+  --color-muted-foreground: #94A3B8;
+  --color-ring: rgba(148, 163, 184, 0.2);
+  --color-primary: #60A5FA;
+  --color-primary-foreground: #0B1121;
+  --color-secondary: rgba(148, 163, 184, 0.1);
+  --color-secondary-foreground: #94A3B8;
+  --color-popover: rgba(15, 23, 42, 0.95);
+  --color-popover-foreground: #F1F5F9;
+  --color-input: rgba(148, 163, 184, 0.15);
+  --color-border: rgba(148, 163, 184, 0.15);
+  --color-destructive: #F87171;
+  --color-destructive-foreground: #0B1121;
+  --color-accent: #60A5FA;
+  --color-accent-foreground: #0B1121;
+}
+
+body {
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  border-color: var(--color-border);
 }

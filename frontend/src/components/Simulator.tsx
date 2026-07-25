@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { runSimulation, type SimulationResult } from '@/lib/api';
 
 interface SimulatorProps {
   runId: string;
+  variables?: string[];
 }
 
-export default function Simulator({ runId }: SimulatorProps) {
+export default function Simulator({ runId, variables = [] }: SimulatorProps) {
   const [target, setTarget] = useState('');
   const [intervention, setIntervention] = useState('');
   const [value, setValue] = useState('');
@@ -31,28 +33,59 @@ export default function Simulator({ runId }: SimulatorProps) {
     }
   }
 
+  const variableOptions = variables.length > 0;
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Counterfactual Simulator</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div>
-          <Label>Target variable</Label>
-          <Input
-            placeholder="e.g. temperature"
-            value={target}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setTarget(e.target.value)}
-          />
-        </div>
-        <div>
-          <Label>Intervention variable</Label>
-          <Input
-            placeholder="e.g. green_space"
-            value={intervention}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setIntervention(e.target.value)}
-          />
-        </div>
+        {variableOptions ? (
+          <>
+            <div>
+              <Label>Target variable</Label>
+              <Select value={target} onValueChange={(v) => v && setTarget(v)}>
+                <SelectTrigger><SelectValue placeholder="Select target" /></SelectTrigger>
+                <SelectContent>
+                  {variables.map((v) => (
+                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Intervention variable</Label>
+              <Select value={intervention} onValueChange={(v) => v && setIntervention(v)}>
+                <SelectTrigger><SelectValue placeholder="Select intervention" /></SelectTrigger>
+                <SelectContent>
+                  {variables.map((v) => (
+                    <SelectItem key={v} value={v}>{v}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <Label>Target variable</Label>
+              <Input
+                placeholder="e.g. temperature"
+                value={target}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setTarget(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Intervention variable</Label>
+              <Input
+                placeholder="e.g. green_space"
+                value={intervention}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setIntervention(e.target.value)}
+              />
+            </div>
+          </>
+        )}
         <div>
           <Label>Intervention value</Label>
           <Input

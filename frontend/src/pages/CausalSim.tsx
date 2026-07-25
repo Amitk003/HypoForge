@@ -1,4 +1,16 @@
 import { useEffect, useState } from 'react';
+import {
+  ReactFlow,
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  type Node,
+  type Edge,
+  MarkerType,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Simulator from '@/components/Simulator';
@@ -13,11 +25,37 @@ interface CausalSimProps {
 export default function CausalSimPage({ runId }: CausalSimProps) {
   const [graph, setGraph] = useState<CausalGraph | null>(null);
   const [loading, setLoading] = useState(false);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   useEffect(() => {
     if (!runId) return;
     setLoading(true);
-    getCausalGraph(runId).then(setGraph).finally(() => setLoading(false));
+    getCausalGraph(runId)
+      .then((g) => {
+        setGraph(g);
+        if (g.nodes.length > 0) {
+          const flowNodes: Node[] = g.nodes.map((name, i) => ({
+            id: name,
+            position: {
+              x: 150 + (i % 4) * 180,
+              y: 60 + Math.floor(i / 4) * 120,
+            },
+            data: { label: name },
+          }));
+          const flowEdges: Edge[] = g.edges.map((e, i) => ({
+            id: `e${i}`,
+            source: e.source,
+            target: e.target,
+            label: e.weight ? String(e.weight) : undefined,
+            markerEnd: { type: MarkerType.ArrowClosed },
+            style: { strokeWidth: 2 },
+          }));
+          setNodes(flowNodes);
+          setEdges(flowEdges);
+        }
+      })
+      .finally(() => setLoading(false));
   }, [runId]);
 
   if (!runId) {
@@ -34,50 +72,43 @@ export default function CausalSimPage({ runId }: CausalSimProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-      <div className="md:col-span-3">
+      <div className="md:col-span-3 space-y-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Causal Graph (DAG)</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {graph.nodes.map((node) => (
-                <Badge key={node} variant="outline" className="bg-text-primary text-white">
-                  {node}
-                </Badge>
-              ))}
+          <CardContent className="p-0">
+            <div style={{ height: 400 }} className="w-full">
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                fitView
+                attributionPosition="bottom-left"
+              >
+                <Controls />
+                <Background />
+                <MiniMap />
+              </ReactFlow>
             </div>
-            <div className="text-sm space-y-1">
-              <p className="font-medium mt-2">Edges:</p>
-              {graph.edges.map((e, i) => (
-                <p key={i} className="text-text-secondary">
-                  {e.source} -&gt; {e.target} {e.weight ? `(weight: ${e.weight})` : ''}
-                </p>
-              ))}
-            </div>
-            {graph.confounders.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {graph.confounders.map((c) => (
-                  <Badge key={c} className="bg-accent-info/20 text-accent-primary border border-accent-info/50">
-                    Confounder: {c}
-                  </Badge>
-                ))}
-              </div>
-            )}
-            {graph.mediators.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-1">
-                {graph.mediators.map((m) => (
-                  <Badge key={m} className="bg-accent-info/20 text-accent-primary border border-accent-info/50">
-                    Mediator: {m}
-                  </Badge>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
+        <div className="flex flex-wrap gap-1">
+          {graph.confounders.length > 0 && graph.confounders.map((c) => (
+            <Badge key={c} className="bg-accent-info/20 text-accent-primary border border-accent-info/50">
+              Confounder: {c}
+            </Badge>
+          ))}
+          {graph.mediators.length > 0 && graph.mediators.map((m) => (
+            <Badge key={m} className="bg-accent-info/20 text-accent-primary border border-accent-info/50">
+              Mediator: {m}
+            </Badge>
+          ))}
+        </div>
       </div>
       <div className="md:col-span-2">
-        <Simulator runId={runId} />
+        <Simulator runId={runId} variables={graph.nodes} />
       </div>
     </div>
   );
