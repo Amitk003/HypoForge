@@ -42,4 +42,7 @@ if __name__ == "__main__":
     print(f"Top hypothesis: {result.top_hypotheses[0].title}")
     print(f"Novelty: {result.top_hypotheses[0].novelty_score:.2f}")
     print(f"Testability: {result.top_hypotheses[0].testability_score:.2f}")
-    print(f"\nMeta-review report preview:\n{result.meta_review_report[:500]}")
+
+    report_path = Path(__file__).parent.parent / "hypoforge_report_urban_climate.md"
+    report_path.write_text(result.meta_review_report)
+    print(f"\nMeta-review report saved to: {report_path}")

@@ -43,3 +43,7 @@ if __name__ == "__main__":
         print(f"Simulations run: {len(result.simulations)}")
     if result.protocols:
         print(f"Protocols designed: {len(result.protocols)}")
+
+    report_path = Path(__file__).parent.parent / "hypoforge_report_biodiversity.md"
+    report_path.write_text(result.meta_review_report)
+    print(f"\nMeta-review report saved to: {report_path}")
