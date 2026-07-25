@@ -78,6 +78,7 @@ class HypothesisState(BaseModel):
     debate_log: list[DebateMessage] = Field(default_factory=list)
     meta_review_report: str = ""
     pipeline_stage: str = "initialized"
+    pipeline_stage_timings: dict = Field(default_factory=dict, description="Stage name -> duration in seconds")
     errors: list[str] = Field(default_factory=list)
 
     @property
