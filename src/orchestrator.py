@@ -41,7 +41,7 @@ def run_data_analysis(state: HypothesisState) -> HypothesisState:
             df = load_dataframe(state.data_path)
             if df is not None:
                 state.dataframe_summary = summarize_dataframe(df)
-                state.causal_graph = build_graph_from_data(df)
+                state.causal_graph = build_graph_from_data(df, alpha=state.alpha)
         except Exception as e:
             state.errors.append(f"Data analysis failed: {e}\n{traceback.format_exc()}")
             state.dataframe_summary = "Data could not be analyzed."
@@ -72,6 +72,7 @@ def run_pipeline(state: HypothesisState) -> HypothesisState:
             state = fn(state)
         except Exception as e:
             state.errors.append(f"{label} failed: {traceback.format_exc()}")
+            state.error_stage_keys.append(key)
         state.pipeline_stage_timings[key] = round(time.time() - t0, 2)
 
     state.pipeline_stage = "complete"
